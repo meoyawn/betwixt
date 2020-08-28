@@ -1,46 +1,45 @@
-import React, { useRef } from "react";
-import { Flex, } from '@chakra-ui/core'
-import YouTube from "react-youtube";
+import React, { ChangeEvent, useRef, useState } from "react";
+import { Divider, FormControl, FormLabel, Image, Input, List, ListItem, Stack, Text } from '@chakra-ui/core'
+import { Video } from "ytsr";
+
 
 // noinspection JSUnusedGlobalSymbols
 export default function Index() {
 
-  const second = useRef<any>(null)
+  const ref = useRef<HTMLAudioElement>(null)
+
+  const [list, setList] = useState<Video[]>([])
 
   return (
-    <Flex
-      marginTop={100}
-      direction={{
-        base: "column",
-        xl: "row",
-      }}
-      alignItems={"center"}
-      justifyContent={"center"}
-    >
+    <Stack>
+      <FormControl>
+        <FormLabel htmlFor={"first_search"}>First video</FormLabel>
+        <Input
+          id={"first_search"}
+          placeholder="Search"
+          onChange={async ({ target }: ChangeEvent<HTMLInputElement>) => {
+            const x: Video[] = await fetch(`/api/search?q=${target.value}`).then(r => r.json())
+            setList(x)
+          }}
+        />
+      </FormControl>
 
-      <YouTube
-        videoId={"uPiYV2wUp6w"}
-        opts={{
-          playerVars: {
-            autoplay: 1,
-            start: 100,
-          }
-        }}
-        onEnd={() => second.current.playVideo()}
-      />
+      <List>
+        {list.map(i => (
+          <ListItem key={i.link}>
+            <Stack direction={"row"}>
+              <Image
+                size={100}
+                objectFit="cover"
+                src={i.thumbnail}
+              />
+              <Text fontWeight={500}>{i.title}</Text>
+            </Stack>
 
-      <YouTube
-        videoId={"FFNBfP_5G98"}
-        opts={{
-          playerVars: {
-            autoplay: 1,
-          }
-        }}
-        onReady={({ target }) => {
-          target.pauseVideo()
-          second.current = target
-        }}
-      />
-    </Flex>
+            <Divider />
+          </ListItem>
+        ))}
+      </List>
+    </Stack>
   )
 }
